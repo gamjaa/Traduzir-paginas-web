@@ -1464,21 +1464,19 @@ const translationService = (function () {
             return sourceArray[0];
           },
           function cbParseResponse(response) {
-            return [
-              {
-                text: response.translations[0].text,
+			return response.translations.map(t => ({
+				text: t.text,
                 detectedLanguage:
-                  response.translations[0].detected_source_language,
-              },
-            ];
+                  t.detected_source_language,
+			}));
           },
           function cbTransformResponse(result, dontSortResults) {
             return [result];
           },
           null,
           function cbGetRequestBody(sourceLanguage, targetLanguage, requests) {
-            const params = new URLSearchParams();
-            params.append("text", requests[0].originalText);
+            const params = {};
+            params["text"] = requests.map(r => r.originalText);
             if (sourceLanguage !== "auto") {
               // params.append("source_lang", sourceLanguage);
             }
@@ -1491,14 +1489,14 @@ const translationService = (function () {
             } else if (targetLanguage.startsWith("fr-")) {
               targetLanguage = "fr";
             }
-            params.append("target_lang", targetLanguage);
-            return params.toString();
+            params["target_lang"] = targetLanguage;
+            return JSON.stringify(params);
           },
           function cbGetExtraHeaders() {
             return [
               {
                 name: "Content-Type",
-                value: "application/x-www-form-urlencoded",
+                value: "application/json",
               },
               {
                 name: "Authorization",
